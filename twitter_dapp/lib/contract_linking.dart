@@ -13,7 +13,7 @@ class ContratLinking {
       "91eacfd65d69428101364e44ae5cbcb3068cfb184a0df87d5fd01e82e62c75a1";
 
   Web3Client? _web3client;
-  bool isLoading = false;
+  bool isLoading = true;
 
   String? _abiCode;
   EthereumAddress? _contractAddress;
@@ -55,5 +55,27 @@ class ContratLinking {
   Future<void> getDeployedContract() async {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode!, "twitterdApp"), _contractAddress!);
+
+    _message = _contract!.function('message');
+    _setMessage = _contract!.function('setMessage');
+    getMessage();
+  }
+
+  getMessage() async {
+    final _mymessage = await _web3client!
+        .call(contract: _contract!, function: _message!, params: []);
+
+    deployedName = _mymessage[0];
+    isLoading = false;
+  }
+
+  setMessage(String message) async {
+    isLoading = true;
+    await _web3client!.sendTransaction(
+      _credentials!,
+      Transaction.callContract(
+          contract: _contract!, function: _setMessage!, parameters: [message]),
+    );
+    getMessage();
   }
 }
