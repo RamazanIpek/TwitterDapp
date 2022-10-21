@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
-class ContratLinking {
+class ContratLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545";
   final String _privateKey =
@@ -42,7 +43,7 @@ class ContratLinking {
         await rootBundle.loadString('build/contracts/twitterdApp.json');
 
     final jsonAbi = jsonDecode(abiStringFile);
-    _abiCode = jsonAbi['abi'];
+    _abiCode = jsonEncode(jsonAbi['abi']);
 
     _contractAddress =
         EthereumAddress.fromHex(jsonAbi['networks']['5777']['address']);
@@ -67,10 +68,12 @@ class ContratLinking {
 
     deployedName = _mymessage[0];
     isLoading = false;
+    notifyListeners();
   }
 
   setMessage(String message) async {
     isLoading = true;
+    notifyListeners();
     await _web3client!.sendTransaction(
       _credentials!,
       Transaction.callContract(
